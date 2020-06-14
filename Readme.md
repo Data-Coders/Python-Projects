@@ -1,10 +1,12 @@
 Python Practice Programs
 
-     This will give you a set of Problems with Solutions after you solved these Question then You will be able to solve many types of Program in Python.
+     This will give you a set of Problems with Solutions after you solved these Question then You will be able to
+      solve many types of Program in Python.
 
 Installation and Running
 
-     You will have to get Installed [Python 3](https://python.org) (Latest Version) and some other things as Described by the Programs Readme FIle
+     You will have to get Installed [Python 3](https://python.org) (Latest Version) and some other things as 
+     Described by the Programs Readme FIle
 
 Languages Used
 
