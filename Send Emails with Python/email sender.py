@@ -1,21 +1,22 @@
-import smtplib
-import json
-import time
-import os
-
-
 class email_sender:
     def createAGroup(self):
         email = {}
-        os.chdir('Send Emails with Python')
+        try:
+            os.chdir('Send Emails with Python')
+        except FileNotFoundError as e:
+            pass
         with open('groups.json', 'a') as fileObj:
             try:
                 group = str(input('Enter The Name of Group : '))
-                numberOfEmailAddress = int(
-                    input('Enter The Number of Participants to add in a Group : '))
             except ValueError as e:
                 print(
                     'Please Enter Correct Value for this (You  Have to Enter Number of Participants in Integers)')
+            try:
+                numberOfEmailAddress = int(
+                    input('Enter The Number of Participants to add in a Group : '))
+            except ValueError as e:
+                print('Please Enter any Integer Here that can be countable')
+                main()
 
             for i in range(0, numberOfEmailAddress):
                 try:
@@ -29,11 +30,37 @@ class email_sender:
             if inserted == True:
                 json.dump(email, fileObj)
 
+    def sendmail(self, sender_add, reciever_add, msg, password):
+        server = smtplib.SMTP('smtp.gmail.com:587')
+        server.starttls()
+        server.login(sender_add, password)
+        server.sendmail(sender_add, reciever_add, msg)
+        print("Mail sent succesfully....!")
+
     def sendEmailToAGroup(self):
         print('This is function 2')
 
+    def login(self):
+        emailtemp = str(input('Enter Your Email Address : '))
+        pas = str(input('Enter Your Password : '))
+        if emailtemp.split('@')[1].split('.')[1] == 'com':
+            email = emailtemp
+        return email, pas
+
     def sendEmailToAnIndividual(self):
-        print('This is function 3')
+        emaill, password = email_sender.login('Get Login Here')
+        emaill_address_temp = input('Enter the Recivers Email Address : ')
+        if emaill_address_temp.split('@')[1].split('.')[1] == 'com':
+            emaill_address = emaill_address_temp
+        else:
+            emaill_address = 'alexmercerr07@gmail.com'
+        sub = input('Enter Your Subject for this E-Mail : ')
+        msg_temp = input('Enter Your Message : ')
+        msg = f"""Subject : {sub}\n\n{msg_temp}"""
+        val = email_sender.sendmail(
+            'Send the mail', emaill, emaill_address, msg, password)
+        print(val)
+        print('Mail has been sucessfully Sent')
 
     def view(self):
         os.system('cls')
@@ -70,7 +97,7 @@ def main():
             exit()
 
         try:
-            inputNumber = int(input('Want to Send More Emails??'))
+            inputNumber = int(input('Want to Send More Emails?? : '))
         except ValueError as e:
             print('Enter The Input Correctly')
             time.sleep(2)
@@ -83,4 +110,8 @@ def main():
 
 
 if __name__ == "__main__":
+    import smtplib
+    import json
+    import time
+    import os
     main()
