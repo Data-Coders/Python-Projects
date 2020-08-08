@@ -2,12 +2,40 @@ class bank:
     def openBankAccount(self):
         os.system('cls')
         bank.header('Header of The Function 1')
-        numberOfCustomers = int(input('Enter the Number Of Customers : '))
+        try:
+            numberOfCustomers = int(input('Enter the Number Of Customers : '))
+        except ValueError as e:
+            print('Please Enter Number Of Customers Here')
+            time.sleep(1)
+            bank.openBankAccount('Got Error in NoOfCustomers')
         for i in range(0, numberOfCustomers):
-            name = str(input('Enter The Full Name : '))
-            pin = int(input(
-                'Please Input PIN of your Choice (Please Keep it Private for Security Reason) : '))
-            amount = int(input('Enter the amount to deposit amount : '))
+            try:
+                name = str(input('Enter The Full Name : '))
+            except ValueError as e:
+                print('Please Enter Name which only Contains English Alphabets')
+                bank.openBankAccount('Got Error')
+            try:
+                pin = int(input(
+                    'Please Input PIN of your Choice (Please Keep it Private for Security Reason) : '))
+                if len(str(pin)) > 4:
+                    print('Please Select PIN with the Length of 4 no less no more')
+                    time.sleep(1)
+                    bank.openBankAccount('Got Error')
+                elif len(str(pin)) < 4:
+                    print('Please Select PIN with the Length of 4 no more no less')
+                    time.sleep(1)
+                    bank.openBankAccount('Got Error')
+            except ValueError as e:
+                print('Please Enter PIN in Numbers as it will be easy to work for You')
+                time.sleep(1)
+                bank.openBankAccount('Got Error')
+            try:
+                amount = int(
+                    input('Enter the amount to deposit amount (Max of 10 Billion) : '))
+            except ValueError as e:
+                print('Enter Amount in Numbers not in Alphabets')
+                time.sleep(1)
+                bank.openBankAccount('Got Error')
             accountNo = int(random.randint(11, 99))
             with open('accountzWithDetails.txt', 'a') as fileObj:
                 data = f'Name ->{name}->PIN ->{pin}->Amount ->{amount}->Account Number ->{accountNo}->\n'
@@ -16,86 +44,211 @@ class bank:
                 print(
                     f'Your Account Number is {accountNo} with PIN number {pin}\n\n Please Note This as this will be asked next time whenever you want to make a Deposit or WithDrwal')
                 time.sleep(3)
+            fileObj.close()
         main()
 
     def withdraw(self):
+        notUpdated = True
+        idpass = True
         os.system('cls')
         bank.header('Header')
+        accountNo = ''
         newAmount = 0
-        accountNo = int(input('Enter Your Account Number : '))
-        pinno = int(input('Enter Your Pin : '))
+        try:
+            accountNumberorName = input('Enter Your Account Number : ')
+            with open('accountzwithDetails.txt', 'r') as FileObj:
+                for line in FileObj:
+                    if accountNumberorName == line.split('->')[1]:
+                        accountNo = line.split('->')[1]
+                    elif int(accountNumberorName) == int(line.split('->')[7]):
+                        accountNo = line.split('->')[7]
+            FileObj.close()
+        except ValueError as er:
+            print('Please Enter Correct Details as Per on the Records on our Servers.')
+            time.sleep(2)
+            main()
+        try:
+            pinno = int(input('Enter Your Pin : '))
+        except ValueError as e:
+            print(
+                'Each and Every PIN numbers stored in our Servers are in form of Numbers not as Alpabets')
+            time.sleep(2)
+            bank.withdraw('Got Error')
         with open('accountzWithDetails.txt', 'r') as fileObj:
             with open('accountz.txt', 'a') as fileObjTemp:
                 for line in fileObj:
-                    if line.split('->')[7] == str(accountNo):
+                    if line.split('->')[7] == str(accountNo) or line.split('->')[1] == str(accountNo):
                         if line.split('->')[3] == str(pinno):
-                            enteredAmount = int(
-                                input('Enter The Amount to be Deposited : '))
+                            try:
+                                enteredAmount = int(
+                                    input('Enter The Amount to be Withdrawn : '))
+                            except ValueError as e:
+                                print('Amount Must be in Numbers not Alpabets')
+                                bank.withdraw()
                             if int(line.split('->')[5]) > enteredAmount:
                                 oldAmount = int(line.split('->')[5])
                                 newAmount = oldAmount - enteredAmount
                                 name = line.split('->')[1]
                                 pin = pinno
                                 amount = newAmount
-                                data = f'Name ->{name}->PIN ->{pin}->Amount ->{amount}->Account Number->{accountNo}->\n'
+                                accountNotemp = line.split('->')[7]
+                                data = f'Name ->{name}->PIN ->{pin}->Amount ->{amount}->Account Number->{accountNotemp}->\n'
                                 fileObjTemp.write(data)
+                                notUpdated = False
                             else:
                                 print(
                                     '''Your Account doesn't have That much of Amount''')
-                                main()
+                                name = line.split('->')[1]
+                                pin = pinno
+                                amount = int(line.split('->')[5])
+                                accountNotemp = line.split('->')[7]
+                                data = f'Name ->{name}->PIN ->{pin}->Amount ->{amount}->Account Number->{accountNotemp}->\n'
+                                fileObjTemp.write(data)
+                                time.sleep(1)
+                                notUpdated = True
                         else:
+                            idpass = False
+                            notUpdated = True
                             data = line
                             fileObjTemp.write(data)
                     else:
+                        idpass = False
+                        notUpdated = True
                         data = line
                         fileObjTemp.write(data)
-        os.remove('accountzWithDetails.txt')
-        os.rename(r'accountz.txt', r'accountzWithDetails.txt')
+            fileObjTemp.close()
+        fileObj.close()
+        if notUpdated == False:
+            os.remove('accountzWithDetails.txt')
+            os.rename(r'accountz.txt', r'accountzWithDetails.txt')
 
-        print('Authenticating')
-        time.sleep(0.5)
-        print('Authenticated!!')
-        print('Updating The Amount')
-        time.sleep(1)
-        print('Updated The Amount')
-        main()
+            print('Authenticating')
+            time.sleep(0.5)
+            print('Authenticated!!')
+            print('Updating The Amount')
+            time.sleep(1)
+            print('Updated The Amount')
+            main()
+        elif notUpdated == True:
+            os.remove('accountzWithDetails.txt')
+            os.rename(r'accountz.txt', r'accountzWithDetails.txt')
+            time.sleep(1)
+            if idpass == True:
+                print(
+                    'Authenticated But Input Amount is Over-Valued as compared to Your Account')
+            else:
+                print(
+                    'Error in Authenticating with Our Servers. \nFull Name/Account Number or PIN is incorrect')
+            time.sleep(1)
+            main()
+
+    def errorr(self):
+        if self == 'PIN':
+            print('Please Enter The correct PIN Number')
+        elif self == 'Name or Account Number':
+            print('Enter The Correct Bank Account Number')
+        else:
+            main()
 
     def deposit(self):
+        notUpdated = True
         os.system('cls')
         bank.header('Header')
+        accountNo = ''
+        pinno = 0
         newAmount = 0
-        accountNo = int(input('Enter Your Account Number : '))
-        pinno = int(input('Enter Your Pin : '))
+        accountNumberorName = input('Enter Your Account Number : ')
+        with open('accountzwithDetails.txt', 'r') as FileObj:
+            for line in FileObj:
+                try:
+                    if accountNumberorName == line.split('->')[1]:
+                        accountNo = line.split('->')[1]
+                    elif int(accountNumberorName) == int(line.split('->')[7]):
+                        accountNo = line.split('->')[7]
+                except ValueError as e:
+                    print(
+                        'Please Enter Correct Name/Account Number as Per on the Account Servers')
+                    time.sleep(3)
+                    main()
+        FileObj.close()
+
+        try:
+            pinnotemp = int(input('Enter Your Pin : '))
+            if len(str(pinnotemp)) == 4:
+                pinno = pinnotemp
+            elif len(str(pinnotemp)) > 4:
+                print(
+                    f'Please Enter You PIN correctly as PIN should be 4 digits long not {len(str(pinnotemp))}')
+                time.sleep(1)
+                bank.deposit('Got error on PIN length')
+            elif len(str(pinnotemp)) < 4:
+                print(
+                    f'Please Enter You PIN correctly as PIN should be 4 digits long not {len(str(pinnotemp))}')
+                time.sleep(1)
+                bank.deposit('Got error on PIN length')
+        except ValueError as e:
+            print('Enter the PIN in Numbers')
+            time.sleep(1)
+            bank.deposit('Got an Error in PIN')
         with open('accountzWithDetails.txt', 'r') as fileObj:
             with open('accountz.txt', 'a') as fileObjTemp:
                 for line in fileObj:
-                    if line.split('->')[7] == str(accountNo):
+                    if line.split('->')[7] == str(accountNo) or line.split('->')[1]:
                         if line.split('->')[3] == str(pinno):
-                            enteredAmount = int(
-                                input('Enter The Amount to be Deposited : '))
+                            try:
+                                enteredAmount = int(
+                                    input('Enter The Amount to be Deposited : '))
+                            except ValueError as e:
+                                print(
+                                    'Please Enter The Amount in Digit Not in Alphabets')
+                                time.sleep(1)
+                                bank.deposit('Got Error on Deposit Amount')
                             oldAmount = int(line.split('->')[5])
-                            newAmount = enteredAmount + oldAmount
+                            newAmounttemp = enteredAmount + oldAmount
+                            if newAmounttemp > 10000000000 and newAmounttemp < 0:
+                                print(
+                                    f'Your Entered Amount is way more to handle our Servers.\nPlease Contact {ITname} for getting this Error Resolved.\nThank You')
+                                time.sleep(1)
+                                fileObj.close()
+                                fileObjTemp.close()
+                                main()
+                            elif newAmounttemp < 10000000000 and newAmounttemp > 0:
+                                newAmount = newAmounttemp
                             name = line.split('->')[1]
                             pin = pinno
                             amount = newAmount
-                            data = f'Name->{name}->PIN->{pin}->Amount->{amount}->Account Number->{accountNo}->\n'
+                            accountNotemp = line.split('->')[7]
+                            data = f'Name->{name}->PIN->{pin}->Amount->{amount}->Account Number->{accountNotemp}->\n'
                             fileObjTemp.write(data)
+                            notUpdated = False
                         else:
+                            notUpdated = True
                             data = line
                             fileObjTemp.write(data)
+                            bank.errorr('PIN')
                     else:
+                        notUpdated = True
                         data = line
                         fileObjTemp.write(data)
-        os.remove('accountzWithDetails.txt')
-        os.rename(r'accountz.txt', r'accountzWithDetails.txt')
+                        bank.errorr('Name or Account Number')
+            fileObjTemp.close()
+        fileObj.close()
+        if notUpdated == False:
+            os.remove('accountzWithDetails.txt')
+            os.rename(r'accountz.txt', r'accountzWithDetails.txt')
 
-        print('Authenticating')
-        time.sleep(0.5)
-        print('Authenticated!!')
-        print('Updating The Amount')
-        time.sleep(1)
-        print('Updated The Amount')
-        main()
+            print('Authenticating')
+            time.sleep(0.5)
+            print('Authenticated!!')
+            print('Updating The Amount')
+            time.sleep(1)
+            print('Updated The Amount')
+            main()
+        elif notUpdated == True:
+            os.remove('accountzWithDetails.txt')
+            os.rename(r'accountz.txt', r'accountzWithDetails.txt')
+            time.sleep(1)
+            main()
 
     def spacee(self, nameOftheParameter, numberThatSpace):
         rightwalaSpace = ''
@@ -115,36 +268,58 @@ class bank:
     def checkCustomersAndBalance(self):
         os.system('cls')
         bank.header('Header')
-        with open('accountzWithDetails.txt', 'r') as fileObj:
+        try:
+            with open('accountzWithDetails.txt', 'r') as fileObj:
+                print(
+                    ' _____________________________________________________________________ ')
+                print(
+                    '|            Name           |  Account Number   |  PIN    |  Amount   |')
+                print(
+                    '|---------------------------------------------------------------------|')
+                for line in fileObj:
+                    leftwalaSpace = ''
+                    rightwalaSpace = ''
+                    name = line.split('->')[1]
+                    accountNo = line.split('->')[7]
+                    pinno = line.split('->')[3]
+                    ammount = line.split('->')[5]
+                    rightwalaSpace, leftwalaSpace = bank.spacee(
+                        'To Get the Space', name, 26)
+                    accountwalaRight, accountwalaLeft = bank.spacee(
+                        'To get the space for account variable', accountNo, 18)
+                    pinwalaRight, pinwalaLeft = bank.spacee(
+                        'To get the Space', pinno, 8)
+                    ammountwalaRight, ammountwalaLeft = bank.spacee(
+                        'To get the Space', ammount, 10)
+                    print(
+                        f'|{leftwalaSpace}{name}{rightwalaSpace}|{accountwalaLeft}{accountNo}{accountwalaRight}|{pinwalaLeft}{pinno}{pinwalaRight}|{ammountwalaLeft}{ammount}{ammountwalaRight}|')
+                    # print(name)
+            print(
+                '|_____________________________________________________________________|')
+            time.sleep(3)
+            fileObj.close()
+            main()
+        except FileNotFoundError as e:
             print(
                 ' _____________________________________________________________________ ')
             print(
                 '|            Name           |  Account Number   |  PIN    |  Amount   |')
             print(
                 '|---------------------------------------------------------------------|')
-            for line in fileObj:
-                leftwalaSpace = ''
-                rightwalaSpace = ''
-                name = line.split('->')[1]
-                accountNo = line.split('->')[7]
-                pinno = line.split('->')[3]
-                ammount = line.split('->')[5]
-                rightwalaSpace, leftwalaSpace = bank.spacee(
-                    'To Get the Space', name, 26)
-                accountwalaRight, accountwalaLeft = bank.spacee(
-                    'To get the space for account variable', accountNo, 18)
-                pinwalaRight, pinwalaLeft = bank.spacee(
-                    'To get the Space', pinno, 8)
-                ammountwalaRight, ammountwalaLeft = bank.spacee(
-                    'To get the Space', ammount, 10)
-                print(
-                    f'|{leftwalaSpace}{name}{rightwalaSpace}|{accountwalaLeft}{accountNo}{accountwalaRight}|{pinwalaLeft}{pinno}{pinwalaRight}|{ammountwalaLeft}{ammount}{ammountwalaRight}|')
-                # print(name)
-        print('|_____________________________________________________________________|')
-        time.sleep(5)
-        main()
+            print(
+                '|DataBase is Currently Empty|        -          |   -     |     -     |')
+            print(
+                ' _____________________________________________________________________ \n\nEnter Some Records To see Your Records Here')
+            time.sleep(3)
+            main()
 
     def view(self):
+        try:
+            os.remove('accountz.txt')
+        except FileNotFoundError as e:
+            pass
+        except PermissionError as e:
+            pass
         os.system('cls')
         print('=======================================================================')
         print(' ------------------------Welcome to Times Bank------------------------ ')
@@ -154,7 +329,8 @@ class bank:
         print('=<< 3. Deposit Money                                                >>=')
         print('=<< 4. Check Customers and Balance                                  >>=')
         print('=<< 5. Delete the DataBase                                          >>=')
-        print('=<< 6. Exit/Quit                                                    >>=')
+        print('=<< 6. Delete a Particular Customer                                 >>=')
+        print('=<< 7. Exit/Quit                                                    >>=')
         print('***********************************************************************')
 
     def header(self):
@@ -163,19 +339,68 @@ class bank:
         print(' ------------------------Welcome to Times Bank------------------------ ')
         print('***********************************************************************')
 
+    def headerr(self):
+        os.system('cls')
+        print('=======================================================================')
+        print(' ------------------------Welcome to Times Bank------------------------ ')
+        print('***********************************************************************')
+        a = self
+        a1 = ''
+        for i in range(1, 5):
+            os.system('cls')
+            bank.header('just to display the meaning')
+            a1 = a1 + '.'
+            time.sleep(0.1)
+            print(a)
+
     def delthedatabase(self):
         os.system('cls')
-        bank.header('Displaying the Data')
-        os.remove('accountzWithDetails.txt')
+        bank.headerr(
+            'Infecting the Server with BlackWatch Virus and Deleting the DataBase')
+        try:
+            os.remove('accountzWithDetails.txt')
+        except FileNotFoundError as e:
+            pass
         time.sleep(5)
+        main()
+
+    def deleteaParticular(self):
+        os.system('cls')
+        bank.header('Heading')
+        try:
+            name = str(input('Enter The Account Holder Name/Account Number'))
+        except ValueError as e:
+            pass
+        with open('accountzWithDetails.txt', 'r') as fileObj:
+            with open('accountz.txt', 'a') as fileObjtemp:
+                for line in fileObj:
+                    if line.split('->')[1] == name or line.split('->')[7]:
+                        pass
+                    else:
+                        fileObjtemp.write(line)
+            fileObjtemp.close()
+        fileObj.close()
+        os.remove('accountzWithDetails.txt')
+        os.rename(r'accountz.txt', r'accountzWithDetails.txt')
         main()
 
 
 def main():
     os.system('cls')
+    try:
+        os.remove('accountz.txt')
+    except FileNotFoundError as e:
+        pass
+    except PermissionError as e:
+        bank.view('View')
     bank.view('view')
-    inputNumber = int(
-        input('Select Your Choice Number from the Above Menu : '))
+    try:
+        inputNumber = int(
+            input('Select Your Choice Number from the Above Menu : '))
+    except ValueError as e:
+        print('Enter the choice in Numbers')
+        time.sleep(1)
+        main()
     if inputNumber == 1:
         bank.openBankAccount('Open Bank Account')
     elif inputNumber == 2:
@@ -185,12 +410,16 @@ def main():
     elif inputNumber == 4:
         bank.checkCustomersAndBalance(
             'Viewing all The Customers Account Balance')
-    elif inputNumber == 6:
-        exit
+    elif inputNumber == 7:
+        exit()
     elif inputNumber == 5:
         bank.delthedatabase('Deleting the DataBase')
+    elif inputNumber == 6:
+        bank.deleteaParticular('Deleting a Particular User Account')
     else:
-        print('Please Enter The Correct Option (i.e. from 1 - 5) : ')
+        print('Please Enter The Correct Option (i.e. from 1 - 5)')
+        time.sleep(1)
+        main()
 
 
 if __name__ == "__main__":
@@ -201,4 +430,5 @@ if __name__ == "__main__":
     except ModuleNotFoundError as e:
         os.system('pip install time')
     finally:
+        ITname = '''Admin'''
         main()
