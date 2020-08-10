@@ -42,7 +42,7 @@ class bank:
                 fileObj.write(data)
                 print('Account Created with Dezired Credentials')
                 print(
-                    f'Your Account Number is {accountNo} with PIN number {pin}\n\n Please Note This as this will be asked next time whenever you want to make a Deposit or WithDrwal')
+                    f'Your Account Number is {accountNo} with PIN number {pin}\n\n Please Note This as this will be asked next time whenever you want to make a Deposit or WithDrwal \n')
                 time.sleep(3)
             fileObj.close()
         main()
@@ -60,8 +60,11 @@ class bank:
                 for line in FileObj:
                     if accountNumberorName == line.split('->')[1]:
                         accountNo = line.split('->')[1]
-                    elif int(accountNumberorName) == int(line.split('->')[7]):
-                        accountNo = line.split('->')[7]
+                    try:
+                        if int(accountNumberorName) == int(line.split('->')[7]):
+                            accountNo = line.split('->')[7]
+                    except ValueError as e:
+                        pass
             FileObj.close()
         except ValueError as er:
             print('Please Enter Correct Details as Per on the Records on our Servers.')
@@ -85,7 +88,7 @@ class bank:
                             except ValueError as e:
                                 print('Amount Must be in Numbers not Alpabets')
                                 bank.withdraw()
-                            if int(line.split('->')[5]) > enteredAmount:
+                            if int(line.split('->')[5]) >= enteredAmount:
                                 oldAmount = int(line.split('->')[5])
                                 newAmount = oldAmount - enteredAmount
                                 name = line.split('->')[1]
@@ -107,13 +110,15 @@ class bank:
                                 time.sleep(1)
                                 notUpdated = True
                         else:
-                            idpass = False
-                            notUpdated = True
+                            if notUpdated == True:
+                                idpass = False
+                                notUpdated = True
                             data = line
                             fileObjTemp.write(data)
                     else:
-                        idpass = False
-                        notUpdated = True
+                        if notUpdated == True:
+                            idpass = False
+                            notUpdated = True
                         data = line
                         fileObjTemp.write(data)
             fileObjTemp.close()
@@ -160,16 +165,13 @@ class bank:
         accountNumberorName = input('Enter Your Account Number : ')
         with open('accountzwithDetails.txt', 'r') as FileObj:
             for line in FileObj:
+                if accountNumberorName == line.split('->')[1]:
+                    accountNo = line.split('->')[1]
                 try:
-                    if accountNumberorName == line.split('->')[1]:
-                        accountNo = line.split('->')[1]
-                    elif int(accountNumberorName) == int(line.split('->')[7]):
+                    if int(accountNumberorName) == int(line.split('->')[7]):
                         accountNo = line.split('->')[7]
                 except ValueError as e:
-                    print(
-                        'Please Enter Correct Name/Account Number as Per on the Account Servers')
-                    time.sleep(3)
-                    main()
+                    pass
         FileObj.close()
 
         try:
@@ -193,7 +195,7 @@ class bank:
         with open('accountzWithDetails.txt', 'r') as fileObj:
             with open('accountz.txt', 'a') as fileObjTemp:
                 for line in fileObj:
-                    if line.split('->')[7] == str(accountNo) or line.split('->')[1]:
+                    if line.split('->')[7] == str(accountNo) or line.split('->')[1] == accountNo:
                         if line.split('->')[3] == str(pinno):
                             try:
                                 enteredAmount = int(
@@ -205,7 +207,7 @@ class bank:
                                 bank.deposit('Got Error on Deposit Amount')
                             oldAmount = int(line.split('->')[5])
                             newAmounttemp = enteredAmount + oldAmount
-                            if newAmounttemp > 10000000000 and newAmounttemp < 0:
+                            if newAmounttemp > 10000000000:
                                 print(
                                     f'Your Entered Amount is way more to handle our Servers.\nPlease Contact {ITname} for getting this Error Resolved.\nThank You')
                                 time.sleep(1)
@@ -222,15 +224,17 @@ class bank:
                             fileObjTemp.write(data)
                             notUpdated = False
                         else:
-                            notUpdated = True
+                            if notUpdated == True:
+                                idpass = False
+                                notUpdated = True
                             data = line
                             fileObjTemp.write(data)
-                            bank.errorr('PIN')
                     else:
-                        notUpdated = True
+                        if notUpdated == True:
+                            idpass = False
+                            notUpdated = True
                         data = line
                         fileObjTemp.write(data)
-                        bank.errorr('Name or Account Number')
             fileObjTemp.close()
         fileObj.close()
         if notUpdated == False:
@@ -247,6 +251,13 @@ class bank:
         elif notUpdated == True:
             os.remove('accountzWithDetails.txt')
             os.rename(r'accountz.txt', r'accountzWithDetails.txt')
+            time.sleep(1)
+            if idpass == True:
+                print(
+                    'Authenticated But Input Amount is Over-Valued as compared to Your Account')
+            else:
+                print(
+                    'Error in Authenticating with Our Servers. \nFull Name/Account Number or PIN is incorrect')
             time.sleep(1)
             main()
 
