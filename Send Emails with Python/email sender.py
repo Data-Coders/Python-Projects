@@ -1,34 +1,14 @@
 class email_sender:
     def createAGroup(self):
-        email = {}
-        try:
-            os.chdir('Send Emails with Python')
-        except FileNotFoundError as e:
-            pass
-        with open('groups.json', 'a') as fileObj:
-            try:
-                group = str(input('Enter The Name of Group : '))
-            except ValueError as e:
-                print(
-                    'Please Enter Correct Value for this (You  Have to Enter Number of Participants in Integers)')
-            try:
-                numberOfEmailAddress = int(
-                    input('Enter The Number of Participants to add in a Group : '))
-            except ValueError as e:
-                print('Please Enter any Integer Here that can be countable')
-                main()
-
-            for i in range(0, numberOfEmailAddress):
-                try:
-                    emailaddresstemp = input('Enter The Email Address : ')
-                    if emailaddresstemp.split('@')[1].split('.')[1] == 'com':
-                        email[group] = emailaddresstemp
-                        inserted = True
-                except ValueError as e:
-                    print('Enter The Correct Email Address')
-                    email_sender.createAGroup()
-            if inserted == True:
-                json.dump(email, fileObj)
+        group = {}
+        ch = 'y'
+        while(ch != 'n'):
+            gname = input('Enter name of group :')
+            group[gname] = input(
+                'Enter contact emails separated by a single space :').rstrip()
+            ch = input('Add another....y/n? :').rstrip()
+        with open('groups.json', 'a') as f:
+            json.dump(group, f)
 
     def sendmail(self, sender_add, reciever_add, msg, password):
         server = smtplib.SMTP('smtp.gmail.com:587')
@@ -38,7 +18,26 @@ class email_sender:
         print("Mail sent succesfully....!")
 
     def sendEmailToAGroup(self):
-        print('This is function 2')
+        gname = input('Enter name of group :')
+        members = ''
+        try:
+            f = open('groups.json', 'r')
+            members = json.load(f)
+            f.close()
+        except:
+            print('Invalid group name. Please Create group first')
+            exit
+        for i in members:
+            print(i)
+        time.sleep(5)
+        members = members[gname].split()
+        msg = input('Enter message :')
+        for i in members:
+            try:
+                sendmail(your_add, i, msg, password)
+            except:
+                print("An unexpected error occured. Please try again later...")
+                continue
 
     def login(self):
         emailtemp = str(input('Enter Your Email Address : '))
@@ -96,13 +95,9 @@ def main():
         elif inputNumber == 4:
             exit()
 
-        try:
-            inputNumber = int(input('Want to Send More Emails?? : '))
-        except ValueError as e:
-            print('Enter The Input Correctly')
-            time.sleep(2)
-            main()
-
+        inputNumber = input('Want to Send More Emails?? : ')
+        if inputNumber == 'No' or inputNumber == 'no' or inputNumber == 'N' or inputNumber == 'n' or inputNumber == 'NO':
+            exit()
     else:
         print('Enter Correct Number')
         time.sleep(2)
@@ -114,4 +109,6 @@ if __name__ == "__main__":
     import json
     import time
     import os
+    os.chdir('Send Emails with Python')
+    haveToIncludeComma = False
     main()
