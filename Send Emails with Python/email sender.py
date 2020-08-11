@@ -1,43 +1,66 @@
 class email_sender:
     def createAGroup(self):
+        global haveToIncludeComma
         group = {}
-        ch = 'y'
-        while(ch != 'n'):
-            gname = input('Enter name of group :')
-            group[gname] = input(
-                'Enter contact emails separated by a single space :').rstrip()
-            ch = input('Add another....y/n? :').rstrip()
+        emaill = ''
+        try:
+            with open('groups.json', 'r') as err:
+                haveToIncludeComma = True
+                err.close()
+        except FileNotFoundError as e:
+            with open('groups.json', 'a') as filee:
+                filee.write('[')
+                filee.close()
+        groups = str(input('Enter the Group Name : '))
+        try:
+            numberOfEmails = int(
+                input('Enter The Number of Emails You want to make a Group : '))
+        except ValueError as e:
+            print('Enter The Number in Digits')
+            main()
+        for i in range(0, numberOfEmails):
+            email = str(input('Enter the Email Address : '))
+            emaill = emaill + ' ' + email
+        group[groups] = emaill
+        endingBrace = False
         with open('groups.json', 'a') as f:
+            if haveToIncludeComma == True:
+                f.write(',')
+                endingBrace = True
             json.dump(group, f)
+            f.write(']')
 
     def sendmail(self, sender_add, reciever_add, msg, password):
         server = smtplib.SMTP('smtp.gmail.com:587')
         server.starttls()
         server.login(sender_add, password)
         server.sendmail(sender_add, reciever_add, msg)
-        print("Mail sent succesfully....!")
+        return 'mail sent'
 
     def sendEmailToAGroup(self):
-        gname = input('Enter name of group :')
-        members = ''
+        memberss = ''
         try:
-            f = open('groups.json', 'r')
-            members = json.load(f)
-            f.close()
-        except:
-            print('Invalid group name. Please Create group first')
-            exit
-        for i in members:
-            print(i)
-        time.sleep(5)
-        members = members[gname].split()
-        msg = input('Enter message :')
-        for i in members:
-            try:
-                sendmail(your_add, i, msg, password)
-            except:
-                print("An unexpected error occured. Please try again later...")
-                continue
+            with open('groups.json', 'r') as err:
+                members = json.load(err)
+                memberss = str(str(members).split("'")[3]).split(' ')
+                err.close()
+        except FileNotFoundError as e:
+            option = str(
+                input('Please Create a Group First.\n\nWant to Create One?? '))
+            if option == 'Yes' or option == 'yes' or option == 'YES':
+                email_sender.createAGroup('Creating a Group Via Error')
+            else:
+                main()
+        email, password = email_sender.login('get Login')
+        subject = str(input('Enter The Subject : '))
+        message = str(input('Enter Your Message for this Mail : '))
+        msg = f"""Subject : {subject}\n\n{message}"""
+        for i in memberss:
+            if len(i) > 0:
+                what = email_sender.sendmail(
+                    'Send the mail', email, i, msg, password)
+                if what == 'mail sent':
+                    print(f'Your mail Have been sent to {i}')
 
     def login(self):
         emailtemp = str(input('Enter Your Email Address : '))
@@ -97,7 +120,7 @@ def main():
 
         inputNumber = input('Want to Send More Emails?? : ')
         if inputNumber == 'No' or inputNumber == 'no' or inputNumber == 'N' or inputNumber == 'n' or inputNumber == 'NO':
-            exit()
+            main()
     else:
         print('Enter Correct Number')
         time.sleep(2)
@@ -111,4 +134,8 @@ if __name__ == "__main__":
     import os
     os.chdir('Send Emails with Python')
     haveToIncludeComma = False
+    try:
+        os.remove('groups.json')
+    except FileNotFoundError as e:
+        pass
     main()
